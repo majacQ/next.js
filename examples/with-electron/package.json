@@ -18,6 +18,9 @@
     ]
   },
   "devDependencies": {
+  <<<<<<< snyk-fix-8d3ff0c1c6d0df9bc9522e543958385a
+    "electron": "^9.4.4",
+  =======
   <<<<<<< snyk-fix-efc08e5473f63f486298ddea8b3b44df
     "electron": "^9.4.0",
   =======
@@ -25,6 +28,7 @@
     "electron": "^8.5.4",
   =======
     "electron": "^12.0.5",
+  >>>>>>> canary
   >>>>>>> canary
   >>>>>>> canary
     "electron-builder": "^21.2.0",
