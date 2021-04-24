@@ -18,7 +18,11 @@
     ]
   },
   "devDependencies": {
+  <<<<<<< snyk-fix-a3129926a9e7ec41196b00f99e4c3dc4
+    "electron": "^8.5.4",
+  =======
     "electron": "^12.0.5",
+  >>>>>>> canary
     "electron-builder": "^21.2.0",
     "next": "latest",
     "react": "^16.12.0",
