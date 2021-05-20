@@ -18,7 +18,19 @@
     ]
   },
   "devDependencies": {
-    "electron": "^7.1.7",
+  <<<<<<< snyk-fix-8d3ff0c1c6d0df9bc9522e543958385a
+    "electron": "^9.4.4",
+  =======
+  <<<<<<< snyk-fix-efc08e5473f63f486298ddea8b3b44df
+    "electron": "^9.4.0",
+  =======
+  <<<<<<< snyk-fix-a3129926a9e7ec41196b00f99e4c3dc4
+    "electron": "^8.5.4",
+  =======
+    "electron": "^12.0.5",
+  >>>>>>> canary
+  >>>>>>> canary
+  >>>>>>> canary
     "electron-builder": "^21.2.0",
     "next": "latest",
     "react": "^16.12.0",

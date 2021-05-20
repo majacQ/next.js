@@ -10,9 +10,15 @@
   "dependencies": {
     "next": "latest",
     "next-redux-wrapper": "^6.0.2",
+  <<<<<<< snyk-upgrade-62c222383decc9f4e4871607a7458dfd
+    "react": "16.14.0",
+    "react-dom": "16.14.0",
+    "react-redux": "7.2.0",
+  =======
     "react": "16.13.1",
     "react-dom": "16.13.1",
-    "react-redux": "7.2.0",
+    "react-redux": "7.2.3",
+  >>>>>>> canary
     "redux": "4.0.5",
     "redux-saga": "1.1.3"
   },
