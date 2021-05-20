@@ -7,10 +7,14 @@
   },
   "dependencies": {
     "bulma-pro": "^0.1.7",
+  <<<<<<< snyk-fix-5ecb94d3683f7ebd2a84b0b00e6a1cfb
+    "next": "^10.2.1",
+  =======
   <<<<<<< snyk-fix-a4f26df82047af04c82b81bc346b3943
     "next": "^10.2.1",
   =======
     "next": "^10.2.0",
+  >>>>>>> canary
   >>>>>>> canary
     "rbx": "^2.2.0",
     "react": "^16.13.1",
