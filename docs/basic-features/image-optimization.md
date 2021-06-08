@@ -2,7 +2,11 @@
 description: Next.js supports built-in image optimization, as well as third party loaders for Imgix, Cloudinary, and more! Learn more here.
 ---
 
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
 # Image Component and Image Optimization
+  =======
+# Image Optimization
+  >>>>>>> ch13148/image-docs
 
 <details open>
   <summary><b>Examples</b></summary>
@@ -11,6 +15,7 @@ description: Next.js supports built-in image optimization, as well as third part
   </ul>
 </details>
 
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
 Since version **10.0.0**, Next.js has a built-in Image Component and Automatic Image Optimization.
 
 The Next.js Image Component, [`next/image`](/docs/api-reference/next/image.md), is an extension of the HTML `<img>` element, evolved for the modern web.
@@ -28,6 +33,17 @@ Images are always rendered in such a way as to avoid [Cumulative Layout Shift](h
 ## Image Component
 
 To add an image to your application, import the [`next/image`](/docs/api-reference/next/image.md) component:
+=======
+Since version **10.0.0** Next.js has a built-in Image Component and Automatic Image Optimization.
+
+The Next.js Image Component (`next/image`) is an extension of the HTML `<img>` element, evolved for the modern web.
+
+The Automatic Image Optimization allows for resizing, optimizing, and serving images in modern formats like [WebP](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types). This avoids shipping large images to devices with a smaller viewport.
+
+## Image Component
+
+To add an image to your application, import the `next/image` component:
+  >>>>>>> ch13148/image-docs
 
 ```jsx
 import Image from 'next/image'
@@ -39,8 +55,13 @@ function Home() {
       <Image
         src="/me.png"
         alt="Picture of the author"
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
         width={500}
         height={500}
+  =======
+        width={200}
+        height={200}
+  >>>>>>> ch13148/image-docs
       />
       <p>Welcome to my homepage!</p>
     </>
@@ -50,6 +71,7 @@ function Home() {
 export default Home
 ```
 
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
 [View all properties](/docs/api-reference/next/image.md) available to the `next/image` component.
 
 ## Configuration
@@ -60,28 +82,56 @@ In addition to [using properties](/docs/api-reference/next/image.md) available t
 
 To enable Image Optimization for images hosted on an external website, use an absolute url for the Image `src` and specify which
 `domains` are allowed to be optimized. This is needed to ensure that external urls can't be abused. When `loader` is set to an external image service, this option is ignored.
+  =======
+- `width` and `height` are required to prevent [Cumulative Layout Shift](https://web.dev/cls/), a [Core Web Vital](https://web.dev/vitals/) that Google is going to [use in their search ranking](https://webmasters.googleblog.com/2020/05/evaluating-page-experience.html)
+- `width` and `height` are automatically responsive, unlike the HTML `<img>` element
+
+## Configuration
+
+You can configure Image Optimization by using the `images` property in `next.config.js`.
+
+### Sizes
+
+You can specify a list of image widths to allow using the `sizes` property. Since images maintain their aspect ratio using the `width` and `height` attributes of the source image, there is no need to specify height in `next.config.js` – only the width. You can think of these as breakpoints.
+  >>>>>>> ch13148/image-docs
 
 ```js
 module.exports = {
   images: {
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
     domains: ['example.com'],
+  =======
+    sizes: [320, 420, 768, 1024, 1200],
+  >>>>>>> ch13148/image-docs
   },
 }
 ```
 
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
 ### Loader
 
 If you want to use a cloud provider to optimize images instead of using the Next.js' built-in Image Optimization, you can configure the loader and path prefix. This allows you to use relative urls for the Image `src` and automatically generate the correct absolute url for your provider.
+  =======
+### Domains
+
+To enable Image Optimization for images hosted on an external website, use an absolute url for the Image `src` and specify which
+`domains` are allowed to be optimized. This is needed to ensure that external urls can't be abused.
+  >>>>>>> ch13148/image-docs
 
 ```js
 module.exports = {
   images: {
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
     loader: 'imgix',
     path: 'https://example.com/myaccount/',
+  =======
+    domains: ['example.com'],
+  >>>>>>> ch13148/image-docs
   },
 }
 ```
 
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
 The following Image Optimization cloud providers are included:
 
 - [Vercel](https://vercel.com): Works automatically when you deploy on Vercel, no configuration necessary. [Learn more](https://vercel.com/docs/next.js/image-optimization)
@@ -115,15 +165,26 @@ The following configuration is for advanced use cases and is usually not necessa
 In some cases, where you know the expected device widths from the users of your website, you can specify a list of device width breakpoints using the `deviceSizes` property. These widths are used when the [`next/image`](/docs/api-reference/next/image.md) component uses `layout="responsive"` or `layout="fill"` so that the correct image is served for the device visiting your website.
 
 If no configuration is provided, the default below is used.
+  =======
+### Loader
+
+If you want to use a cloud image provider to optimize images instead of using the Next.js' built-in image optimization, you can configure the loader and path prefix. This allows you to use relative urls for the Image `src` and automatically generate the correct absolute url for your provider.
+  >>>>>>> ch13148/image-docs
 
 ```js
 module.exports = {
   images: {
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+  =======
+    loader: 'imgix',
+    path: 'https://example.com/myaccount/',
+  >>>>>>> ch13148/image-docs
   },
 }
 ```
 
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
 ### Image Sizes
 
 You can specify a list of image widths using the `imageSizes` property. These widths should be different (usually smaller) than the widths defined in `deviceSizes` because the arrays will be concatenated. These widths are used when the [`next/image`](/docs/api-reference/next/image.md) component uses `layout="fixed"` or `layout="intrinsic"`.
@@ -137,14 +198,37 @@ module.exports = {
   },
 }
 ```
+  =======
+The following Image Optimization cloud providers are supported:
+
+- Imgix: `loader: 'imgix'`
+- Cloudinary: `loader: 'cloudinary'`
+- Akamai: `loader: 'akamai'`
+- Vercel: No configuration necessary
+  >>>>>>> ch13148/image-docs
 
 ## Related
 
 For more information on what to do next, we recommend the following sections:
 
 <div class="card">
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
   <a href="/docs/api-reference/next/image.md">
     <b>next/image</b>
     <small>See all available properties for the Image component</small>
   </a>
 </div>
+  =======
+  <a href="/docs/basic-features/built-in-css-support.md">
+    <b>CSS Support:</b>
+    <small>Use the built-in CSS support to add custom styles to your app.</small>
+  </a>
+</div>
+
+<div class="card">
+- When using `next start` or a custom server image optimization works automatically.
+- [Vercel](https://vercel.com): Works automatically when you deploy on Vercel
+- [Imgix](https://www.imgix.com): `loader: 'imgix'`
+- [Cloudinary](https://cloudinary.com): `loader: 'cloudinary'`
+- [Akamai](https://www.akamai.com): `loader: 'akamai'`
+  >>>>>>> ch13148/image-docs
