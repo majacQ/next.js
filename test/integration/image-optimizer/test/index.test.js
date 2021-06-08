@@ -13,6 +13,7 @@ import {
 } from 'next-test-utils'
 import isAnimated from 'next/dist/compiled/is-animated'
 import { join } from 'path'
+import { createHash } from 'crypto'
 
 jest.setTimeout(1000 * 60 * 2)
 
@@ -214,6 +215,13 @@ function runTests({ w, isDev, domains }) {
     expect(await res.text()).toBe(
       `"q" parameter (quality) must be a number between 1 and 100`
     )
+  })
+
+  it('should fail when s is present and not "1"', async () => {
+    const query = { url: '/test.png', w, q: 100, s: 'foo' }
+    const res = await fetchViaHTTP(appPort, '/_next/image', query, {})
+    expect(res.status).toBe(400)
+    expect(await res.text()).toBe(`"s" parameter must be "1" or omitted`)
   })
 
   it('should fail when domain is not defined in next.config.js', async () => {
@@ -481,6 +489,73 @@ function runTests({ w, isDev, domains }) {
     expect(res.headers.get('etag')).toBeTruthy()
     await expectWidth(res, 400)
   })
+
+  it('should not change the color type of a png', async () => {
+    // https://github.com/vercel/next.js/issues/22929
+    // A grayscaled PNG with transparent pixels.
+    const query = { url: '/grayscale.png', w: largeSize, q: 80 }
+    const opts = { headers: { accept: 'image/png' } }
+    const res = await fetchViaHTTP(appPort, '/_next/image', query, opts)
+    expect(res.status).toBe(200)
+    expect(res.headers.get('Content-Type')).toBe('image/png')
+    expect(res.headers.get('cache-control')).toBe(
+      'public, max-age=0, must-revalidate'
+    )
+
+    const png = await res.buffer()
+
+    // Read the color type byte (offset 9 + magic number 16).
+    // http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
+    const colorType = png.readUIntBE(25, 1)
+    expect(colorType).toBe(4)
+  })
+
+  it('should set cache-control to immutable for static images', async () => {
+    const query = { url: '/test.jpg', w, q: 100, s: '1' }
+    const opts = { headers: { accept: 'image/webp' } }
+    const res = await fetchViaHTTP(appPort, '/_next/image', query, opts)
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toBe(
+      'public, immutable, max-age=315360000'
+    )
+  })
+
+  it("should error if the resource isn't a valid image", async () => {
+    const query = { url: '/test.txt', w, q: 80 }
+    const opts = { headers: { accept: 'image/webp' } }
+    const res = await fetchViaHTTP(appPort, '/_next/image', query, opts)
+    expect(res.status).toBe(400)
+    expect(await res.text()).toBe("The requested resource isn't a valid image.")
+  })
+
+  it('should handle concurrent requests', async () => {
+    const query = { url: '/test.png', w, q: 80 }
+    const opts = { headers: { accept: 'image/webp,*/*' } }
+    const [res1, res2] = await Promise.all([
+      fetchViaHTTP(appPort, '/_next/image', query, opts),
+      fetchViaHTTP(appPort, '/_next/image', query, opts),
+    ])
+    expect(res1.status).toBe(200)
+    expect(res2.status).toBe(200)
+    expect(res1.headers.get('Content-Type')).toBe('image/webp')
+    expect(res2.headers.get('Content-Type')).toBe('image/webp')
+    await expectWidth(res1, w)
+    await expectWidth(res2, w)
+
+    // There should be only one image created in the cache directory.
+    const hashItems = [2, '/test.png', w, 80, 'image/webp']
+    const hash = createHash('sha256')
+    for (let item of hashItems) {
+      if (typeof item === 'number') hash.update(String(item))
+      else {
+        hash.update(item)
+      }
+    }
+    const hashDir = hash.digest('base64').replace(/\//g, '-')
+    const dir = join(imagesDir, hashDir)
+    const files = await fs.readdir(dir)
+    expect(files.length).toBe(1)
+  })
 }
 
 describe('Image Optimizer', () => {
@@ -736,6 +811,39 @@ describe('Image Optimizer', () => {
       const opts = { headers: { accept: 'image/webp' } }
       const res = await fetchViaHTTP(appPort, '/_next/image', query, opts)
       expect(res.status).toBe(404)
+    })
+  })
+
+  describe('External rewrite support with for serving static content in images', () => {
+    beforeAll(async () => {
+      const newConfig = `{
+        async rewrites() {
+          return [
+            {
+              source: '/:base(next-js)/:rest*',
+              destination: 'https://assets.vercel.com/image/upload/v1538361091/repositories/:base/:rest*',
+            },
+          ]
+        },
+      }`
+      nextConfig.replace('{ /* replaceme */ }', newConfig)
+      appPort = await findPort()
+      app = await launchApp(appDir, appPort)
+    })
+
+    afterAll(async () => {
+      await killApp(app)
+      nextConfig.restore()
+      await fs.remove(imagesDir)
+    })
+
+    it('should return response when image is served from an external rewrite', async () => {
+      const query = { url: '/next-js/next-js-bg.png', w: 64, q: 75 }
+      const opts = { headers: { accept: 'image/webp' } }
+      const res = await fetchViaHTTP(appPort, '/_next/image', query, opts)
+      expect(res.status).toBe(200)
+      expect(res.headers.get('Content-Type')).toBe('image/webp')
+      await expectWidth(res, 64)
     })
   })
 })
