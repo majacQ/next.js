@@ -1,7 +1,8 @@
 /* eslint-env jest */
 /* global browserName */
 import cheerio from 'cheerio'
-import { existsSync } from 'fs'
+import fs, { existsSync } from 'fs-extra'
+import globOriginal from 'glob'
 import {
   nextServer,
   renderViaHTTP,
@@ -10,6 +11,7 @@ import {
   stopApp,
   waitFor,
   getPageFileFromPagesManifest,
+  check,
 } from 'next-test-utils'
 import webdriver from 'next-webdriver'
 import {
@@ -23,6 +25,10 @@ import { join } from 'path'
 import dynamicImportTests from './dynamic'
 import processEnv from './process-env'
 import security from './security'
+import { promisify } from 'util'
+
+const glob = promisify(globOriginal)
+
 const appDir = join(__dirname, '../')
 let appPort
 let server
@@ -32,19 +38,53 @@ jest.setTimeout(1000 * 60 * 5)
 const context = {}
 
 describe('Production Usage', () => {
+  let output = ''
   beforeAll(async () => {
-    await runNextCommand(['build', appDir])
+    const result = await runNextCommand(['build', appDir], {
+      stderr: true,
+      stdout: true,
+    })
 
     app = nextServer({
       dir: join(__dirname, '../'),
       dev: false,
       quiet: true,
     })
+    output = (result.stderr || '') + (result.stdout || '')
+    console.log(output)
+
+    if (result.code !== 0) {
+      throw new Error(`Failed to build, exited with code ${result.code}`)
+    }
 
     server = await startApp(app)
     context.appPort = appPort = server.address().port
   })
   afterAll(() => stopApp(server))
+
+  it('should contain generated page count in output', async () => {
+    expect(output).toContain('Generating static pages (0/37)')
+    expect(output).toContain('Generating static pages (37/37)')
+    // we should only have 4 segments and the initial message logged out
+    expect(output.match(/Generating static pages/g).length).toBe(5)
+  })
+
+  it('should not contain currentScript usage for publicPath', async () => {
+    const globResult = await glob('webpack-*.js', {
+      cwd: join(appDir, '.next/static/chunks'),
+    })
+
+    if (!globResult || globResult.length !== 1) {
+      throw new Error('could not find webpack-hash.js chunk')
+    }
+
+    const content = await fs.readFile(
+      join(appDir, '.next/static/chunks', globResult[0]),
+      'utf8'
+    )
+
+    expect(content).not.toContain('.currentScript')
+  })
 
   describe('With basic usage', () => {
     it('should render the page', async () => {
@@ -233,10 +273,16 @@ describe('Production Usage', () => {
 
       const resources = new Set()
 
+      const manifestKey = Object.keys(reactLoadableManifest).find((item) => {
+        return item
+          .replace(/\\/g, '/')
+          .endsWith('dynamic/css.js -> ../../components/dynamic-css/with-css')
+      })
+
       // test dynamic chunk
-      resources.add(
-        url + reactLoadableManifest['../../components/hello1'][0].file
-      )
+      reactLoadableManifest[manifestKey].files.forEach((f) => {
+        resources.add(url + f)
+      })
 
       // test main.js runtime etc
       for (const item of buildManifest.pages['/']) {
@@ -764,6 +810,10 @@ describe('Production Usage', () => {
     expect(existsSync(join(appDir, '.next', 'profile-events.json'))).toBe(false)
   })
 
+  it('should not emit stats', async () => {
+    expect(existsSync(join(appDir, '.next', 'next-stats.json'))).toBe(false)
+  })
+
   it('should contain the Next.js version in window export', async () => {
     let browser
     try {
@@ -781,7 +831,8 @@ describe('Production Usage', () => {
   it('should clear all core performance marks', async () => {
     let browser
     try {
-      browser = await webdriver(appPort, '/about')
+      browser = await webdriver(appPort, '/fully-dynamic')
+
       const currentPerfMarks = await browser.eval(
         `window.performance.getEntriesByType('mark')`
       )
@@ -841,6 +892,27 @@ describe('Production Usage', () => {
       }
     }
     expect(missing).toBe(false)
+  })
+
+  it('should preserve query when hard navigating from page 404', async () => {
+    const browser = await webdriver(appPort, '/')
+    await browser.eval(`(function() {
+      window.beforeNav = 1
+      window.next.router.push({
+        pathname: '/non-existent',
+        query: { hello: 'world' }
+      })
+    })()`)
+
+    await check(
+      () => browser.eval('document.documentElement.innerHTML'),
+      /page could not be found/
+    )
+
+    expect(await browser.eval('window.beforeNav')).toBe(null)
+    expect(await browser.eval('window.location.hash')).toBe('')
+    expect(await browser.eval('window.location.search')).toBe('?hello=world')
+    expect(await browser.eval('window.location.pathname')).toBe('/non-existent')
   })
 
   dynamicImportTests(context, (p, q) => renderViaHTTP(context.appPort, p, q))

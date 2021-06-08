@@ -1,5 +1,9 @@
 {
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
+  "name": "image-component",
+  =======
   "name": "rewrites",
+  >>>>>>> ch13148/image-docs
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
@@ -7,7 +11,11 @@
     "start": "next start"
   },
   "dependencies": {
+  <<<<<<< snyk-fix-baf02dc20bc4341160f02eecf39c6991
+    "next": "canary",
+  =======
     "next": "latest",
+  >>>>>>> ch13148/image-docs
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   },
