@@ -13,7 +13,11 @@
     "@atlaskit/datetime-picker": "^9.2.8",
     "@atlaskit/dropdown-menu": "^9.0.2",
     "@atlaskit/field-base": "^14.0.2",
+  <<<<<<< snyk-fix-1810023b0403b91cb4b9419181002212
+    "next": "^10.0.7",
+  =======
     "next": "^10.2.0",
+  >>>>>>> canary
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "styled-components": "^5.0.1"
