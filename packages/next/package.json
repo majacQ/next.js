@@ -226,7 +226,7 @@
     "typescript": "3.8.3",
     "unistore": "3.4.1",
     "web-vitals": "0.2.4",
-    "webpack": "4.44.1",
+    "webpack": "5.0.0",
     "webpack-sources": "1.4.3"
   },
   "engines": {
