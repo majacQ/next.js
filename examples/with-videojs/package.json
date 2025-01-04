@@ -10,7 +10,7 @@
     "next": "^10.0.7",
     "react": "16.14.0",
     "react-dom": "16.14.0",
-    "video.js": "^6.7.3",
+    "video.js": "^7.14.3",
     "videojs-youtube": "^2.4.1"
   },
   "license": "MIT"
